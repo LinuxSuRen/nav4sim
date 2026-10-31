@@ -50,7 +50,7 @@ docker run -d --name gz-sim --network host \
 docker run -d --name gz-sim --network host \
   -e ROS_DOMAIN_ID=42 \
   nav4sim ros2 launch /opt/gz/launch/gz.launch.py \
-    world:=<world-file> spawn_x:=0.0 spawn_y:=0.0
+    world:=maze.world spawn_x:=-17.0 spawn_y:=-17.0
 ```
 
 ### 3. Connect your navigation system
@@ -73,6 +73,7 @@ set the robot start pose with `spawn_x` / `spawn_y`.
 | World | Size | Test focus |
 |---|---|---|
 | `explore_room.world` (default) | 30×20 m | Frontier exploration: occlusion zones, sub-rooms, dead-end pocket |
+| `maze.world` | 36×36 m | Perfect maze, 1.8 m corridors: narrow-passage planning, forced backtracking |
 
 Default world (`explore_room.world`) details:
 
@@ -102,6 +103,7 @@ nav4sim/
 │   └── gz.launch.py       # Gazebo launch (world/spawn args, headless/GUI, robot spawn)
 ├── urdf/
 │   └── explore_bot.urdf.xacro  # Robot model (sensors + planar_move)
+├── tools/                # world generator scripts (deterministic regeneration)
 ├── worlds/                 # simulation worlds (see table above)
 └── README.md
 ```
