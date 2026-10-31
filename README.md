@@ -75,6 +75,7 @@ set the robot start pose with `spawn_x` / `spawn_y`.
 | `explore_room.world` (default) | 30×20 m | Frontier exploration: occlusion zones, sub-rooms, dead-end pocket |
 | `maze.world` | 36×36 m | Perfect maze, 1.8 m corridors: narrow-passage planning, forced backtracking |
 | `warehouse.world` | 50×30 m | Aisles beyond LiDAR range, repeated shelving (landmark aliasing), pillars/pallets |
+| `dynamic_room.world` | 30×20 m | Wandering frictionless movers (LiDAR-visible): dynamic obstacle avoidance |
 
 Default world (`explore_room.world`) details:
 
