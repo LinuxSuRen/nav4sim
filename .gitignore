@@ -1,0 +1,19 @@
+# Build artifacts
+*.egg-info/
+__pycache__/
+*.pyc
+node_modules/
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local config (not for version control)
+docker-compose*.local.yml
+*.local.yaml

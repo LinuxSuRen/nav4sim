@@ -1,0 +1,182 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <world name="explore_room">
+
+    <include><uri>model://sun</uri></include>
+    <include><uri>model://ground_plane</uri></include>
+
+    <physics name="default_physics" type="ode">
+      <max_step_size>0.005</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <!-- ═══════════ Closed room 30m × 20m (inner walls) ═══════════ -->
+    <!-- Lidar range 15m → robot can't see full room from any single point -->
+
+    <!-- North wall (y=+10) -->
+    <model name="wall_n">
+      <pose>0 10.0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>30.0 0.2 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>30.0 0.2 1.0</size></box></geometry>
+          <material><ambient>0.8 0.8 0.7 1</ambient><diffuse>0.8 0.8 0.7 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- South wall (y=-10) -->
+    <model name="wall_s">
+      <pose>0 -10.0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>30.0 0.2 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>30.0 0.2 1.0</size></box></geometry>
+          <material><ambient>0.8 0.8 0.7 1</ambient><diffuse>0.8 0.8 0.7 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- East wall (x=+15) -->
+    <model name="wall_e">
+      <pose>15.0 0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 20.0 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 20.0 1.0</size></box></geometry>
+          <material><ambient>0.8 0.8 0.7 1</ambient><diffuse>0.8 0.8 0.7 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- West wall (x=-15) -->
+    <model name="wall_w">
+      <pose>-15.0 0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 20.0 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 20.0 1.0</size></box></geometry>
+          <material><ambient>0.8 0.8 0.7 1</ambient><diffuse>0.8 0.8 0.7 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ═══════════ Interior obstacles (occlusion-rich for frontier generation) ═══════════ -->
+
+    <!-- Central wall block (creates major occlusion zones) -->
+    <model name="central_block">
+      <pose>0 0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.0 4.0 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.0 4.0 1.0</size></box></geometry>
+          <material><ambient>0.6 0.2 0.2 1</ambient><diffuse>0.6 0.2 0.2 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- East wing wall (occludes east corridor) -->
+    <model name="east_wall_a">
+      <pose>8.0 3.0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>6.0 0.3 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>6.0 0.3 1.0</size></box></geometry>
+          <material><ambient>0.5 0.5 0.6 1</ambient><diffuse>0.5 0.5 0.6 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="east_wall_b">
+      <pose>8.0 -3.0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>6.0 0.3 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>6.0 0.3 1.0</size></box></geometry>
+          <material><ambient>0.5 0.5 0.6 1</ambient><diffuse>0.5 0.5 0.6 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- West partition (creates rooms) -->
+    <model name="west_part_a">
+      <pose>-8.0 5.0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.3 10.0 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.3 10.0 1.0</size></box></geometry>
+          <material><ambient>0.5 0.5 0.6 1</ambient><diffuse>0.5 0.5 0.6 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <!-- Gap in west partition at y∈[-5,-0.5] → passable -->
+
+    <!-- NW dead-end pocket (blacklist test) -->
+    <model name="pocket_n">
+      <pose>-11.5 7.0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>6.0 0.2 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>6.0 0.2 1.0</size></box></geometry>
+          <material><ambient>0.9 0.5 0.1 1</ambient><diffuse>0.9 0.5 0.1 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="pocket_e">
+      <pose>-9.0 5.0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 4.2 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 4.2 1.0</size></box></geometry>
+          <material><ambient>0.9 0.5 0.1 1</ambient><diffuse>0.9 0.5 0.1 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- SE corner cluster -->
+    <model name="se_box1">
+      <pose>10.0 -7.0 0.35 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>1.5 1.5 0.7</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>1.5 1.5 0.7</size></box></geometry>
+          <material><ambient>0.3 0.5 0.8 1</ambient><diffuse>0.3 0.5 0.8 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="se_box2">
+      <pose>12.0 -5.0 0.35 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>1.0 1.0 0.7</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>1.0 1.0 0.7</size></box></geometry>
+          <material><ambient>0.3 0.5 0.8 1</ambient><diffuse>0.3 0.5 0.8 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Low bar -->
+    <model name="low_bar">
+      <pose>4.0 -5.0 0.06 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>1.0 0.10 0.12</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>1.0 0.10 0.12</size></box></geometry>
+          <material><ambient>0.9 0.3 0.1 1</ambient><diffuse>0.9 0.3 0.1 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- SW pillar -->
+    <model name="sw_pillar">
+      <pose>-10.0 -7.0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.15 0.15 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.15 0.15 1.0</size></box></geometry>
+          <material><ambient>0.4 0.4 0.4 1</ambient><diffuse>0.4 0.4 0.4 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>
