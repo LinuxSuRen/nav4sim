@@ -45,6 +45,12 @@ docker run -d --name gz-sim --network host \
   -e DISPLAY=host.docker.internal:0.0 \
   -e LIBGL_ALWAYS_SOFTWARE=1 \
   nav4sim
+
+# Select a world and/or spawn point (overrides the image CMD)
+docker run -d --name gz-sim --network host \
+  -e ROS_DOMAIN_ID=42 \
+  nav4sim ros2 launch /opt/gz/launch/gz.launch.py \
+    world:=<world-file> spawn_x:=0.0 spawn_y:=0.0
 ```
 
 ### 3. Connect your navigation system
@@ -59,9 +65,16 @@ docker run -d --name nav --network host \
 
 DDS discovery is automatic — no configuration needed.
 
-## Simulation world
+## Simulation worlds
 
-Default world: 30 m × 20 m closed room with:
+Pick a world with the `world` launch argument (file name under `worlds/`);
+set the robot start pose with `spawn_x` / `spawn_y`.
+
+| World | Size | Test focus |
+|---|---|---|
+| `explore_room.world` (default) | 30×20 m | Frontier exploration: occlusion zones, sub-rooms, dead-end pocket |
+
+Default world (`explore_room.world`) details:
 
 - Central wall block (creates occlusion zones for frontier detection)
 - East wing walls (occludes corridors)
@@ -69,7 +82,8 @@ Default world: 30 m × 20 m closed room with:
 - Dead-end pocket (tests goal blacklisting)
 - Box clusters and low bar (obstacle avoidance testing)
 
-Custom worlds can be placed in `worlds/` and referenced in the launch file.
+Custom worlds can be placed in `worlds/` and selected with the `world`
+launch argument.
 
 ## Robot model
 
@@ -85,11 +99,10 @@ Simple box robot (`urdf/explore_bot.urdf.xacro`):
 nav4sim/
 ├── Dockerfile              # ros:humble-ros-base + gazebo-ros-pkgs
 ├── launch/
-│   └── gz.launch.py       # Gazebo launch (headless/GUI, robot spawn)
+│   └── gz.launch.py       # Gazebo launch (world/spawn args, headless/GUI, robot spawn)
 ├── urdf/
 │   └── explore_bot.urdf.xacro  # Robot model (sensors + planar_move)
-├── worlds/
-│   └── explore_room.world      # 30×20m test environment
+├── worlds/                 # simulation worlds (see table above)
 └── README.md
 ```
 
