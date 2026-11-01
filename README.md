@@ -63,6 +63,12 @@ docker run -d --name gz-sim --network host \
   -e LIBGL_ALWAYS_SOFTWARE=1 \
   nav4sim
 
+# Select a world and/or spawn point (overrides the image CMD)
+docker run -d --name gz-sim --network host \
+  -e ROS_DOMAIN_ID=42 \
+  nav4sim ros2 launch /opt/gz/launch/gz.launch.py \
+    world:=<world-file> spawn_x:=0.0 spawn_y:=0.0
+
 # Launch a specific world directly, bypassing the web service
 docker run -d --name gz-sim --network host \
   -e ROS_DOMAIN_ID=42 \
@@ -121,10 +127,10 @@ nav4sim/
 ├── Dockerfile              # ros:humble-ros-base + gazebo-ros-pkgs
 ├── launch/
 │   └── gz.launch.py       # Gazebo launch (world/spawn args, headless/GUI, robot spawn)
-├── web/
-│   └── main.go            # web control service (Go): world dropdown, start/stop/switch (port 8080)
 ├── urdf/
 │   └── explore_bot.urdf.xacro  # Robot model (sensors + planar_move)
+├── web/
+│   └── main.go            # web control service (Go): world dropdown, start/stop/switch (port 8080)
 ├── tools/                # world generator scripts (deterministic regeneration)
 ├── worlds/                 # simulation worlds (see table above)
 └── README.md
