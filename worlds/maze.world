@@ -1,0 +1,1507 @@
+<?xml version="1.0"?>
+<!-- 36m x 36m perfect maze (single solution path between any two cells).
+
+Test focus:
+  - narrow-corridor path planning (1.8m corridors, robot footprint 0.8 x 0.45m)
+  - full-coverage exploration (a perfect maze forces backtracking)
+  - LiDAR (15m) cannot see across the maze: local decision-making under uncertainty
+
+Spawn point: cell (0,0) center  =>  spawn_x:=-17.0  spawn_y:=-17.0
+Suggested goal: cell (17,17)    =>  x=17.0, y=17.0 (opposite corner)
+
+Generated with a seeded recursive-backtracker (see PR description); regenerate
+deterministically with seed 42.
+-->
+<sdf version="1.6">
+  <world name="maze">
+
+    <include><uri>model://sun</uri></include>
+    <include><uri>model://ground_plane</uri></include>
+
+    <physics name="default_physics" type="ode">
+      <max_step_size>0.005</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <model name="shell_n">
+      <pose>0.000 18.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>36.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>36.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.55 0.6 0.65 1</ambient><diffuse>0.55 0.6 0.65 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="shell_s">
+      <pose>0.000 -18.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>36.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>36.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.55 0.6 0.65 1</ambient><diffuse>0.55 0.6 0.65 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="shell_e">
+      <pose>18.000 0.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 36.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 36.200 1.000</size></box></geometry>
+          <material><ambient>0.55 0.6 0.65 1</ambient><diffuse>0.55 0.6 0.65 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="shell_w">
+      <pose>-18.000 0.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 36.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 36.200 1.000</size></box></geometry>
+          <material><ambient>0.55 0.6 0.65 1</ambient><diffuse>0.55 0.6 0.65 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv000">
+      <pose>-16.000 -2.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 6.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 6.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv001">
+      <pose>-16.000 7.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv002">
+      <pose>-16.000 11.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv003">
+      <pose>-14.000 -7.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv004">
+      <pose>-14.000 -1.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv005">
+      <pose>-14.000 11.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 4.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 4.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv006">
+      <pose>-12.000 -14.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 6.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 6.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv007">
+      <pose>-12.000 -4.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv008">
+      <pose>-12.000 2.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv009">
+      <pose>-12.000 9.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 4.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 4.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv010">
+      <pose>-12.000 15.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv011">
+      <pose>-10.000 -14.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv012">
+      <pose>-10.000 -8.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv013">
+      <pose>-10.000 -1.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 4.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 4.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv014">
+      <pose>-10.000 6.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv015">
+      <pose>-10.000 13.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv016">
+      <pose>-8.000 -11.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv017">
+      <pose>-8.000 -1.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv018">
+      <pose>-8.000 3.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv019">
+      <pose>-8.000 12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 6.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 6.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv020">
+      <pose>-6.000 -12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv021">
+      <pose>-6.000 3.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 8.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 8.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv022">
+      <pose>-6.000 12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv023">
+      <pose>-4.000 -15.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv024">
+      <pose>-4.000 -9.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv025">
+      <pose>-4.000 3.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 4.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 4.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv026">
+      <pose>-4.000 15.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv027">
+      <pose>-2.000 -9.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 8.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 8.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv028">
+      <pose>-2.000 1.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 4.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 4.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv029">
+      <pose>-2.000 8.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv030">
+      <pose>-2.000 17.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv031">
+      <pose>0.000 -11.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv032">
+      <pose>0.000 -6.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv033">
+      <pose>0.000 7.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv034">
+      <pose>0.000 13.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 4.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 4.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv035">
+      <pose>2.000 -16.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv036">
+      <pose>2.000 -8.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv037">
+      <pose>2.000 -1.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv038">
+      <pose>2.000 5.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv039">
+      <pose>2.000 12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv040">
+      <pose>4.000 -17.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv041">
+      <pose>4.000 -10.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv042">
+      <pose>4.000 -1.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 8.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 8.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv043">
+      <pose>4.000 9.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv044">
+      <pose>4.000 14.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv045">
+      <pose>6.000 -7.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv046">
+      <pose>6.000 -2.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv047">
+      <pose>6.000 4.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv048">
+      <pose>6.000 12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv049">
+      <pose>6.000 17.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv050">
+      <pose>8.000 -15.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv051">
+      <pose>8.000 -9.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv052">
+      <pose>8.000 -3.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv053">
+      <pose>8.000 2.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv054">
+      <pose>8.000 10.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv055">
+      <pose>8.000 15.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv056">
+      <pose>10.000 -12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv057">
+      <pose>10.000 -3.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 4.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 4.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv058">
+      <pose>10.000 12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv059">
+      <pose>10.000 17.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv060">
+      <pose>12.000 -14.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv061">
+      <pose>12.000 0.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv062">
+      <pose>12.000 9.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 4.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 4.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv063">
+      <pose>12.000 15.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv064">
+      <pose>14.000 -13.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv065">
+      <pose>14.000 -6.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv066">
+      <pose>14.000 4.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 6.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 6.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv067">
+      <pose>14.000 17.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv068">
+      <pose>16.000 -10.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv069">
+      <pose>16.000 -1.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 4.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 4.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mv070">
+      <pose>16.000 12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 2.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 2.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh000">
+      <pose>-16.000 -16.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh001">
+      <pose>-4.000 -16.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>6.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>6.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh002">
+      <pose>7.000 -16.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh003">
+      <pose>13.000 -16.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>4.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>4.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh004">
+      <pose>-14.000 -14.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh005">
+      <pose>-8.000 -14.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh006">
+      <pose>-3.000 -14.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh007">
+      <pose>5.000 -14.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>8.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>8.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh008">
+      <pose>16.000 -14.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh009">
+      <pose>-16.000 -12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh010">
+      <pose>-5.000 -12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh011">
+      <pose>4.000 -12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>6.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>6.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh012">
+      <pose>13.000 -12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh013">
+      <pose>-11.000 -10.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>8.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>8.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh014">
+      <pose>-1.000 -10.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh015">
+      <pose>6.000 -10.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh016">
+      <pose>13.000 -10.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>4.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>4.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh017">
+      <pose>-15.000 -8.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>4.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>4.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh018">
+      <pose>-5.000 -8.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>4.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>4.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh019">
+      <pose>1.000 -8.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh020">
+      <pose>11.000 -8.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>4.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>4.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh021">
+      <pose>-8.000 -6.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>6.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>6.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh022">
+      <pose>7.000 -6.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>8.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>8.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh023">
+      <pose>16.000 -6.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh024">
+      <pose>-14.000 -4.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh025">
+      <pose>-5.000 -4.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>4.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>4.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh026">
+      <pose>1.000 -4.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh027">
+      <pose>7.000 -4.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh028">
+      <pose>13.000 -4.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh029">
+      <pose>-11.000 -2.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh030">
+      <pose>-3.000 -2.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>8.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>8.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh031">
+      <pose>14.000 -2.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh032">
+      <pose>-13.000 0.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh033">
+      <pose>1.000 0.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh034">
+      <pose>7.000 0.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh035">
+      <pose>11.000 0.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh036">
+      <pose>-15.000 2.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh037">
+      <pose>-9.000 2.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh038">
+      <pose>3.000 2.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>4.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>4.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh039">
+      <pose>9.000 2.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh040">
+      <pose>-14.000 4.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>6.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>6.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh041">
+      <pose>-7.000 4.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh042">
+      <pose>0.000 4.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh043">
+      <pose>12.000 4.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>6.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>6.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh044">
+      <pose>-13.000 6.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh045">
+      <pose>-9.000 6.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh046">
+      <pose>-2.000 6.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh047">
+      <pose>7.000 6.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>8.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>8.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh048">
+      <pose>17.000 6.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh049">
+      <pose>-15.000 8.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh050">
+      <pose>-11.000 8.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh051">
+      <pose>-6.000 8.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh052">
+      <pose>5.000 8.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>8.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>8.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh053">
+      <pose>16.000 8.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh054">
+      <pose>-17.000 10.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh055">
+      <pose>-9.000 10.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh056">
+      <pose>-4.000 10.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh057">
+      <pose>3.000 10.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh058">
+      <pose>11.000 10.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh059">
+      <pose>15.000 10.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh060">
+      <pose>-11.000 12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh061">
+      <pose>-3.000 12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>4.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>4.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh062">
+      <pose>5.000 12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh063">
+      <pose>13.000 12.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh064">
+      <pose>-16.000 14.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh065">
+      <pose>-11.000 14.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh066">
+      <pose>-3.000 14.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh067">
+      <pose>11.000 14.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>8.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>8.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh068">
+      <pose>-14.000 16.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh069">
+      <pose>-7.000 16.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>4.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>4.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh070">
+      <pose>-1.000 16.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh071">
+      <pose>3.000 16.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="mh072">
+      <pose>15.000 16.000 0.500 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.200 0.200 1.000</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.200 0.200 1.000</size></box></geometry>
+          <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>

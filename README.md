@@ -31,14 +31,31 @@ cd nav4sim
 docker build -t nav4sim .
 ```
 
-### 2. Start the simulation
+Or pull the prebuilt image (published to GHCR from `master` on every merge):
 
 ```bash
-# Headless (no GUI, recommended for CI/automated testing)
+docker pull ghcr.io/linuxsuren/nav4sim:latest
+```
+
+### 2. Start the simulation
+
+The image starts a small web service (default port `8080`) where you can pick
+the simulation world from a dropdown and (re)start it — no container restart
+or `docker exec` needed.
+
+```bash
 docker run -d --name gz-sim --network host \
   -e ROS_DOMAIN_ID=42 \
+  -p 8080:8080 \
   nav4sim
+```
 
+Open <http://localhost:8080>, choose a world (plus optional spawn point and
+GUI switch) and click **Start / Switch**. The default world starts
+automatically on boot. The port can be changed with `NAV4SIM_WEB_PORT`; the
+web service can be bypassed by overriding the image CMD as shown below.
+
+```bash
 # With Gazebo GUI (requires X11 forwarding)
 docker run -d --name gz-sim --network host \
   -e ROS_DOMAIN_ID=42 \
@@ -51,6 +68,12 @@ docker run -d --name gz-sim --network host \
   -e ROS_DOMAIN_ID=42 \
   nav4sim ros2 launch /opt/gz/launch/gz.launch.py \
     world:=<world-file> spawn_x:=0.0 spawn_y:=0.0
+
+# Launch a specific world directly, bypassing the web service
+docker run -d --name gz-sim --network host \
+  -e ROS_DOMAIN_ID=42 \
+  nav4sim bash -c "source /opt/ros/humble/setup.bash && ros2 launch /opt/gz/launch/gz.launch.py \
+    world:=maze.world spawn_x:=-17.0 spawn_y:=-17.0"
 ```
 
 ### 3. Connect your navigation system
@@ -73,6 +96,10 @@ set the robot start pose with `spawn_x` / `spawn_y`.
 | World | Size | Test focus |
 |---|---|---|
 | `explore_room.world` (default) | 30×20 m | Frontier exploration: occlusion zones, sub-rooms, dead-end pocket |
+| `maze.world` | 36×36 m | Perfect maze, 1.8 m corridors: narrow-passage planning, forced backtracking |
+| `warehouse.world` | 50×30 m | Aisles beyond LiDAR range, repeated shelving (landmark aliasing), pillars/pallets |
+| `dynamic_room.world` | 30×20 m | Wandering frictionless movers (LiDAR-visible): dynamic obstacle avoidance |
+| `loop_corridor.world` | 30×30 m | Ring corridor + central room + dead-end pockets: loop closure, relocalization |
 
 Default world (`explore_room.world`) details:
 
@@ -102,6 +129,9 @@ nav4sim/
 │   └── gz.launch.py       # Gazebo launch (world/spawn args, headless/GUI, robot spawn)
 ├── urdf/
 │   └── explore_bot.urdf.xacro  # Robot model (sensors + planar_move)
+├── web/
+│   └── main.go            # web control service (Go): world dropdown, start/stop/switch (port 8080)
+├── tools/                # world generator scripts (deterministic regeneration)
 ├── worlds/                 # simulation worlds (see table above)
 └── README.md
 ```
