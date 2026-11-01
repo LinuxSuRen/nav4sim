@@ -52,7 +52,32 @@ jobs:
             type=semver,pattern={{version}}
             type=sha,prefix=master-
 
-      - name: Build (and push off PRs)
+      # Nothing is pushed before the image is proven to actually run:
+      # a truncated/corrupt image (see issue #9) must fail here, not at users.
+      - name: Build image locally (smoke candidate)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: nav4sim:smoke
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Runtime smoke test (default world loads, LiDAR publishes, no SDF errors)
+        run: |
+          docker run -d --name gz-smoke -e ROS_DOMAIN_ID=99 nav4sim:smoke bash -c \
+            "source /opt/ros/humble/setup.bash && ros2 launch /opt/gz/launch/gz.launch.py gui:=false"
+          trap 'docker rm -f gz-smoke' EXIT
+          sleep 25
+          docker exec -e ROS_DOMAIN_ID=99 gz-smoke bash -c \
+            "source /opt/ros/humble/setup.bash && timeout 8 ros2 topic hz /points_raw --window 10 2>/dev/null" \
+            | tee hz.txt
+          grep -q 'average rate' hz.txt
+          if docker logs gz-smoke 2>&1 | grep -E 'Unable to parse|failed to load|\[Err\]|file too short'; then
+            echo "gzserver reported errors"; exit 1
+          fi
+
+      - name: Build (and push off PRs; layers come from the smoke-tested cache)
         uses: docker/build-push-action@v6
         with:
           context: .
