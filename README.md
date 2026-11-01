@@ -136,6 +136,40 @@ nav4sim/
 └── README.md
 ```
 
+## Troubleshooting
+
+### `ros2 launch` reports "does not contain the required function 'generate_launch_description()'"
+
+The image is built and published only after a runtime smoke test, so a
+published image always contains a working launch file. If you still see this
+error (or `error while loading shared libraries: ... file too short`), the
+image files were **truncated on your machine during pull** — a known Docker
+Desktop bug (typically on macOS with the VirtioFS file-sharing
+implementation). ROS 2 loads the truncated launch file as a valid but empty
+Python module, hence the misleading message.
+
+Verify and recover:
+
+```bash
+# 1. Check for truncated (0-byte) files inside the image — prints 0 when healthy
+docker run --rm --entrypoint find ghcr.io/linuxsuren/nav4sim:latest \
+  /opt/gz /usr/lib/x86_64-linux-gnu -type f -size 0 | wc -l
+
+# 2. If any file is 0 bytes: delete the local copy and pull again
+docker image rm ghcr.io/linuxsuren/nav4sim:latest
+docker pull ghcr.io/linuxsuren/nav4sim:latest
+
+# 3. If it recurs: Settings → General → switch the file-sharing
+#    implementation (VirtioFS → gRPC FUSE), then repeat step 2
+```
+
+### Other issues
+
+- No LiDAR data: make sure both containers use the same `ROS_DOMAIN_ID` and
+  `--network host`.
+- GUI does not appear: X11 forwarding is required (`DISPLAY` +
+  `host.docker.internal:0.0`), see the example above.
+
 ## License
 
 [MIT](LICENSE)
