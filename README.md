@@ -31,6 +31,12 @@ cd nav4sim
 docker build -t nav4sim .
 ```
 
+Or pull the prebuilt image (published to GHCR from `master` on every merge):
+
+```bash
+docker pull ghcr.io/linuxsuren/nav4sim:latest
+```
+
 ### 2. Start the simulation
 
 ```bash

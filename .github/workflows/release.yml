@@ -1,0 +1,82 @@
+# Release workflow — two ways to cut a release:
+#
+#   1. Actions → release → Run workflow → enter a tag (e.g. v0.1.0).
+#      The workflow tags the head of the default branch, smoke-builds the
+#      Docker image, and creates the GitHub release with generated notes.
+#   2. Push a tag manually:
+#      git tag v0.1.0 && git push origin v0.1.0
+#
+# Notes are generated from commits/PRs; edit the release afterwards as needed.
+# The smoke job guards against publishing a tag whose world fails to load.
+
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v0.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t nav4sim:smoke .
+
+      - name: Headless smoke test (default world loads, LiDAR publishes, no SDF errors)
+        run: |
+          docker run -d --name gz-smoke -e ROS_DOMAIN_ID=99 nav4sim:smoke bash -c \
+            "source /opt/ros/humble/setup.bash && ros2 launch /opt/gz/launch/gz.launch.py gui:=false"
+          trap 'docker rm -f gz-smoke' EXIT
+          sleep 25
+          docker exec -e ROS_DOMAIN_ID=99 gz-smoke bash -c \
+            "source /opt/ros/humble/setup.bash && timeout 8 ros2 topic hz /points_raw --window 10 2>/dev/null" \
+            | tee hz.txt
+          grep -q 'average rate' hz.txt
+          if docker logs gz-smoke 2>&1 | grep -E 'Unable to parse|failed to load|\[Err\]'; then
+            echo "gzserver reported errors"; exit 1
+          fi
+
+  release:
+    needs: smoke
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve or create the tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          if ! git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            git tag "${TAG}"
+            git push origin "${TAG}"
+          fi
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            echo "Release ${TAG} already exists — nothing to do."
+            exit 0
+          fi
+          gh release create "${TAG}" --title "${TAG}" --verify-tag --generate-notes
