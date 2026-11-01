@@ -46,14 +46,13 @@ or `docker exec` needed.
 ```bash
 docker run -d --name gz-sim --network host \
   -e ROS_DOMAIN_ID=42 \
-  -p 8080:8080 \
   nav4sim
 ```
 
 Open <http://localhost:8080>, choose a world (plus optional spawn point and
 GUI switch) and click **Start / Switch**. The default world starts
-automatically on boot. The port can be changed with `NAV4SIM_WEB_PORT`; the
-web service can be bypassed by overriding the image CMD as shown below.
+automatically on boot. The web service can be bypassed by overriding the
+image CMD as shown below.
 
 ```bash
 # With Gazebo GUI (requires X11 forwarding)
@@ -75,6 +74,22 @@ docker run -d --name gz-sim --network host \
   nav4sim bash -c "source /opt/ros/humble/setup.bash && ros2 launch /opt/gz/launch/gz.launch.py \
     world:=maze.world spawn_x:=-17.0 spawn_y:=-17.0"
 ```
+
+### Custom web port
+
+The control UI listens on `8080` by default. Pass `NAV4SIM_WEB_PORT` at
+container start to serve it on a different port — handy when `8080` is
+already taken on the host:
+
+```bash
+docker run -d --name gz-sim --network host \
+  -e ROS_DOMAIN_ID=42 \
+  -e NAV4SIM_WEB_PORT=9090 \
+  nav4sim
+```
+
+The UI is then available at <http://localhost:9090>. (With `--network host`
+the process binds the host port directly, so no `-p` mapping is needed.)
 
 ### 3. Connect your navigation system
 
