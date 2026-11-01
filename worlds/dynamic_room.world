@@ -1,0 +1,182 @@
+<?xml version="1.0"?>
+<!-- 30m x 20m room with three WANDERING dynamic obstacles + static interior.
+
+Test focus:
+  - dynamic obstacle avoidance: movers change velocity every few seconds
+  - moving-map SLAM: obstacles appear/disappear from the map as they move
+  - mixed static/dynamic planning
+
+How the movers work (self-contained, no external publisher needed):
+  each mover is a frictionless dynamic box driven by Gazebo's built-in
+  libRandomVelocityPlugin.so, which sets a new random velocity every
+  update_period seconds. Being dynamic bodies, the room walls physically
+  confine them and their collision geometry is seen by the robot's
+  CPU-ray LiDAR (/points_raw).
+
+Spawn point: (-12.0, 0.0)  (default, west sub-room entrance)
+Caution: movers slide at 0.4~0.8 m/s and shove the robot on contact.
+-->
+<sdf version="1.6">
+  <world name="dynamic_room">
+
+    <include><uri>model://sun</uri></include>
+    <include><uri>model://ground_plane</uri></include>
+
+    <physics name="default_physics" type="ode">
+      <max_step_size>0.005</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <!-- ═══════════ Closed room 30m × 20m (same shell as explore_room) ═══════════ -->
+    <model name="wall_n">
+      <pose>0 10.0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>30.0 0.2 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>30.0 0.2 1.0</size></box></geometry>
+          <material><ambient>0.8 0.8 0.7 1</ambient><diffuse>0.8 0.8 0.7 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_s">
+      <pose>0 -10.0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>30.0 0.2 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>30.0 0.2 1.0</size></box></geometry>
+          <material><ambient>0.8 0.8 0.7 1</ambient><diffuse>0.8 0.8 0.7 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_e">
+      <pose>15.0 0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 20.0 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 20.0 1.0</size></box></geometry>
+          <material><ambient>0.8 0.8 0.7 1</ambient><diffuse>0.8 0.8 0.7 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_w">
+      <pose>-15.0 0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 20.0 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 20.0 1.0</size></box></geometry>
+          <material><ambient>0.8 0.8 0.7 1</ambient><diffuse>0.8 0.8 0.7 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ═══════════ Static interior (kept sparse: room for the movers) ═══════════ -->
+    <!-- Central wall block -->
+    <model name="central_block">
+      <pose>0 0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>2.0 4.0 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>2.0 4.0 1.0</size></box></geometry>
+          <material><ambient>0.6 0.2 0.2 1</ambient><diffuse>0.6 0.2 0.2 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <!-- West partition with passable gap at y∈[-5,-0.5] -->
+    <model name="west_part">
+      <pose>-8.0 5.0 0.5 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.3 10.0 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.3 10.0 1.0</size></box></geometry>
+          <material><ambient>0.5 0.5 0.6 1</ambient><diffuse>0.5 0.5 0.6 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <!-- SE corner static cluster -->
+    <model name="se_box1">
+      <pose>10.0 -7.0 0.35 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>1.5 1.5 0.7</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>1.5 1.5 0.7</size></box></geometry>
+          <material><ambient>0.3 0.5 0.8 1</ambient><diffuse>0.3 0.5 0.8 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ═══════════ Dynamic movers (frictionless, wall-confined, LiDAR-visible) ═══════════ -->
+
+    <!-- Mover 1: frictionless box, new random heading every 4 s (speed ≤ 0.8 m/s) -->
+    <model name="mover_1">
+      <pose>3.0 3.0 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.8 0.8 1.0</size></box></geometry>
+          <surface>
+            <friction><ode><mu>0.0</mu><mu2>0.0</mu2></ode></friction>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.8 0.8 1.0</size></box></geometry>
+          <material><ambient>0.9 0.2 0.2 1</ambient><diffuse>0.9 0.2 0.2 1</diffuse></material>
+        </visual>
+      </link>
+      <plugin name="random_1" filename="libRandomVelocityPlugin.so">
+        <link>link</link>
+        <initial_velocity>0 0.6 0</initial_velocity>
+        <velocity_factor>0.8</velocity_factor>
+        <update_period>4</update_period>
+        <min_z>0</min_z><max_z>0</max_z>
+      </plugin>
+    </model>
+
+    <!-- Mover 2: smaller box, faster heading changes (every 3 s, speed ≤ 0.6 m/s) -->
+    <model name="mover_2">
+      <pose>8.0 0.0 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.6 0.6 1.0</size></box></geometry>
+          <surface>
+            <friction><ode><mu>0.0</mu><mu2>0.0</mu2></ode></friction>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.6 0.6 1.0</size></box></geometry>
+          <material><ambient>0.2 0.9 0.2 1</ambient><diffuse>0.2 0.9 0.2 1</diffuse></material>
+        </visual>
+      </link>
+      <plugin name="random_2" filename="libRandomVelocityPlugin.so">
+        <link>link</link>
+        <initial_velocity>0 0.5 0</initial_velocity>
+        <velocity_factor>0.6</velocity_factor>
+        <update_period>3</update_period>
+        <min_z>0</min_z><max_z>0</max_z>
+      </plugin>
+    </model>
+
+    <!-- Mover 3: low half-height box (0.5 m), slower heading changes (every 5 s) -->
+    <model name="mover_3">
+      <pose>-11.0 -4.0 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>1.0 1.0 0.5</size></box></geometry>
+          <surface>
+            <friction><ode><mu>0.0</mu><mu2>0.0</mu2></ode></friction>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>1.0 1.0 0.5</size></box></geometry>
+          <material><ambient>0.2 0.2 0.9 1</ambient><diffuse>0.2 0.2 0.9 1</diffuse></material>
+        </visual>
+      </link>
+      <plugin name="random_3" filename="libRandomVelocityPlugin.so">
+        <link>link</link>
+        <initial_velocity>0 0.4 0</initial_velocity>
+        <velocity_factor>0.5</velocity_factor>
+        <update_period>5</update_period>
+        <min_z>0</min_z><max_z>0</max_z>
+      </plugin>
+    </model>
+
+  </world>
+</sdf>
