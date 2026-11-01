@@ -39,12 +39,23 @@ docker pull ghcr.io/linuxsuren/nav4sim:latest
 
 ### 2. Start the simulation
 
+The image starts a small web service (default port `8080`) where you can pick
+the simulation world from a dropdown and (re)start it — no container restart
+or `docker exec` needed.
+
 ```bash
-# Headless (no GUI, recommended for CI/automated testing)
 docker run -d --name gz-sim --network host \
   -e ROS_DOMAIN_ID=42 \
+  -p 8080:8080 \
   nav4sim
+```
 
+Open <http://localhost:8080>, choose a world (plus optional spawn point and
+GUI switch) and click **Start / Switch**. The default world starts
+automatically on boot. The port can be changed with `NAV4SIM_WEB_PORT`; the
+web service can be bypassed by overriding the image CMD as shown below.
+
+```bash
 # With Gazebo GUI (requires X11 forwarding)
 docker run -d --name gz-sim --network host \
   -e ROS_DOMAIN_ID=42 \
@@ -52,11 +63,11 @@ docker run -d --name gz-sim --network host \
   -e LIBGL_ALWAYS_SOFTWARE=1 \
   nav4sim
 
-# Select a world and/or spawn point (overrides the image CMD)
+# Launch a specific world directly, bypassing the web service
 docker run -d --name gz-sim --network host \
   -e ROS_DOMAIN_ID=42 \
-  nav4sim ros2 launch /opt/gz/launch/gz.launch.py \
-    world:=maze.world spawn_x:=-17.0 spawn_y:=-17.0
+  nav4sim bash -c "source /opt/ros/humble/setup.bash && ros2 launch /opt/gz/launch/gz.launch.py \
+    world:=maze.world spawn_x:=-17.0 spawn_y:=-17.0"
 ```
 
 ### 3. Connect your navigation system
@@ -109,6 +120,8 @@ nav4sim/
 ├── Dockerfile              # ros:humble-ros-base + gazebo-ros-pkgs
 ├── launch/
 │   └── gz.launch.py       # Gazebo launch (world/spawn args, headless/GUI, robot spawn)
+├── web/
+│   └── main.go            # web control service (Go): world dropdown, start/stop/switch (port 8080)
 ├── urdf/
 │   └── explore_bot.urdf.xacro  # Robot model (sensors + planar_move)
 ├── tools/                # world generator scripts (deterministic regeneration)
