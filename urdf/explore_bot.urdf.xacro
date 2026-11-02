@@ -1,10 +1,56 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="explore_bot">
 
+  <!-- rear_lidar: true adds a second LiDAR at the rear publishing /points_raw/rear -->
+  <xacro:arg name="rear_lidar" default="true"/>
+
   <!-- Based on simple_car_jt128_sim.urdf.xacro (sensor chain) + planar_move for driving -->
 
   <material name="car_body"><color rgba="0.2 0.5 0.8 1.0"/></material>
   <material name="sensor_grey"><color rgba="0.4 0.4 0.4 1.0"/></material>
+
+  <!-- JT128-like 3D LiDAR sensor (front and rear slots share one macro).
+       Topic naming follows the nav_sys slot convention:
+         front slot -> /points_raw        @ lidar_link
+         rear  slot -> /points_raw/rear   @ lidar_rear_link (optional, fusion/diagnostics) -->
+  <xacro:macro name="jt128_lidar" params="sensor_name frame topic">
+    <gazebo reference="${frame}">
+      <sensor type="ray" name="${sensor_name}">
+        <pose>0 0 0 0 0 0</pose>
+        <visualize>false</visualize>
+        <update_rate>10</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>720</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.14159</min_angle>
+              <max_angle>3.14159</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>16</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.35</min_angle>
+              <max_angle>0.25</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.15</min>
+            <max>15.0</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <plugin name="${sensor_name}_controller" filename="libgazebo_ros_ray_sensor.so">
+          <ros>
+            <namespace>/</namespace>
+            <remapping>~/out:=${topic}</remapping>
+          </ros>
+          <output_type>sensor_msgs/PointCloud2</output_type>
+          <frame_name>${frame}</frame_name>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
 
   <!-- base_footprint (ground projection) -->
   <link name="base_footprint">
@@ -36,7 +82,7 @@
     </collision>
   </link>
 
-  <!-- lidar_link (canonical frame, same position as jt128_front_link) -->
+  <!-- front LiDAR (canonical frame, same position as jt128_front_link) -->
   <joint name="lidar_joint" type="fixed">
     <origin xyz="0.35 0.0 0.22" rpy="0 0 0"/>
     <parent link="base_link"/>
@@ -53,6 +99,26 @@
       <material name="sensor_grey"/>
     </visual>
   </link>
+
+  <!-- rear LiDAR: mirrored position, rotated 180 deg so sensor forward faces backward -->
+  <xacro:if value="$(arg rear_lidar)">
+    <joint name="lidar_rear_joint" type="fixed">
+      <origin xyz="-0.35 0.0 0.22" rpy="0 0 3.14159"/>
+      <parent link="base_link"/>
+      <child link="lidar_rear_link"/>
+    </joint>
+
+    <link name="lidar_rear_link">
+      <inertial>
+        <mass value="0.01"/>
+        <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+      </inertial>
+      <visual>
+        <geometry><cylinder radius="0.05" length="0.07"/></geometry>
+        <material name="sensor_grey"/>
+      </visual>
+    </link>
+  </xacro:if>
 
   <!-- ======== NOT static: robot must be movable for planar_move plugin ======== -->
   <gazebo>
@@ -76,42 +142,12 @@
     </plugin>
   </gazebo>
 
-  <!-- ======== JT128-like 3D LiDAR (same config as repo sensor chain) ======== -->
-  <gazebo reference="lidar_link">
-    <sensor type="ray" name="explore_lidar">
-      <pose>0 0 0 0 0 0</pose>
-      <visualize>false</visualize>
-      <update_rate>10</update_rate>
-      <ray>
-        <scan>
-          <horizontal>
-            <samples>720</samples>
-            <resolution>1</resolution>
-            <min_angle>-3.14159</min_angle>
-            <max_angle>3.14159</max_angle>
-          </horizontal>
-          <vertical>
-            <samples>16</samples>
-            <resolution>1</resolution>
-            <min_angle>-0.35</min_angle>
-            <max_angle>0.25</max_angle>
-          </vertical>
-        </scan>
-        <range>
-          <min>0.15</min>
-          <max>15.0</max>
-          <resolution>0.01</resolution>
-        </range>
-      </ray>
-      <plugin name="lidar_controller" filename="libgazebo_ros_ray_sensor.so">
-        <ros>
-          <namespace>/</namespace>
-          <remapping>~/out:=/points_raw</remapping>
-        </ros>
-        <output_type>sensor_msgs/PointCloud2</output_type>
-        <frame_name>lidar_link</frame_name>
-      </plugin>
-    </sensor>
-  </gazebo>
+  <!-- ======== front LiDAR: /points_raw (the only cloud the nav stack consumes) ======== -->
+  <xacro:jt128_lidar sensor_name="explore_lidar" frame="lidar_link" topic="/points_raw"/>
+
+  <!-- ======== rear LiDAR: /points_raw/rear (optional second slot, see macro doc) ======== -->
+  <xacro:if value="$(arg rear_lidar)">
+    <xacro:jt128_lidar sensor_name="explore_lidar_rear" frame="lidar_rear_link" topic="/points_raw/rear"/>
+  </xacro:if>
 
 </robot>

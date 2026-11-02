@@ -8,10 +8,12 @@ This simulation publishes the exact same DDS topics that a real robot would:
 
 | DDS Topic | Type | Description |
 |---|---|---|
-| `/points_raw` | `sensor_msgs/PointCloud2` | 3D LiDAR point cloud (720×16, 10 Hz, 15 m range) |
+| `/points_raw` | `sensor_msgs/PointCloud2` | 3D LiDAR point cloud, front slot (720×16, 10 Hz, 15 m range) |
+| `/points_raw/rear` | `sensor_msgs/PointCloud2` | 3D LiDAR point cloud, rear slot `lidar_rear_link` (omit with `rear_lidar:=false`) |
 | `/odom` | `nav_msgs/Odometry` | Wheel odometry (ground truth from physics engine) |
 | `/clock` | `rosgraph_msgs/Clock` | Simulation clock (for `use_sim_time`) |
 | TF `odom→base_footprint` | — | Chassis TF |
+| TF `base_link→{lidar_link,lidar_rear_link}` | — | Sensor TF |
 | `/cmd_vel` (subscribe) | `geometry_msgs/Twist` | Velocity commands |
 
 Any ROS 2 navigation stack that subscribes to these topics will work with this simulation out of the box — no code changes needed.
@@ -164,7 +166,9 @@ host-networking support — upgrade to 4.34+.
 ## Simulation worlds
 
 Pick a world with the `world` launch argument (file name under `worlds/`);
-set the robot start pose with `spawn_x` / `spawn_y`.
+set the robot start pose with `spawn_x` / `spawn_y`; drop the rear LiDAR
+with `rear_lidar:=false` (saves sensor CPU when your stack only consumes
+the front cloud).
 
 | World | Size | Test focus |
 |---|---|---|
