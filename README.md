@@ -193,6 +193,11 @@ Simple box robot (`urdf/explore_bot.urdf.xacro`):
 - **LiDAR**: 720 horizontal × 16 vertical rays, 10 Hz, 15 m range
 - **Chassis**: `gazebo_ros_planar_move` plugin (velocity-commanded, publishes odometry)
 
+No ROS at hand? Preview this URDF/Xacro in a browser with
+[robot-viewer](https://github.com/LinuxSuRen/robot-viewer) — load the
+`urdf/` directory (or drag & drop the file) to render the model in 3D
+without installing anything.
+
 ## Files
 
 ```
