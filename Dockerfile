@@ -18,12 +18,14 @@ RUN apt-get update -qq \
        ros-humble-gazebo-ros-pkgs \
        ros-humble-xacro \
        ros-humble-robot-state-publisher \
+       ros-humble-rviz2 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=web /nav4sim-web /usr/local/bin/nav4sim-web
 COPY urdf/ /opt/gz/urdf/
 COPY worlds/ /opt/gz/worlds/
 COPY launch/ /opt/gz/launch/
+COPY config/ /opt/gz/config/
 
 ENV ROS_DOMAIN_ID=42
 ENV NAV4SIM_WEB_PORT=8080

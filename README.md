@@ -56,7 +56,8 @@ automatically on boot. The port can be changed with `NAV4SIM_WEB_PORT`; the
 web service can be bypassed by overriding the image CMD as shown below.
 
 ```bash
-# With Gazebo GUI (requires X11 forwarding)
+# With Gazebo GUI (requires X11 forwarding; on Windows see
+# "Visualization (RViz2) → Windows" below)
 docker run -d --name gz-sim --network host \
   -e ROS_DOMAIN_ID=42 \
   -e DISPLAY=host.docker.internal:0.0 \
@@ -87,6 +88,78 @@ docker run -d --name nav --network host \
 ```
 
 DDS discovery is automatic — no configuration needed.
+
+## Visualization (RViz2)
+
+The image bundles RViz2 and a preset config (`config/nav4sim.rviz`) that
+shows the grid, robot model, TF, the LiDAR point cloud (`/points_raw`) and
+odometry arrows (`/odom`). Run it as a **sidecar container** with the same
+`ROS_DOMAIN_ID` — the simulation itself stays headless.
+
+On **Linux** (X11 forwarding to a local display):
+
+```bash
+docker run --rm -it --network host \
+  -e ROS_DOMAIN_ID=42 \
+  -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix \
+  nav4sim rviz2 -d /opt/gz/config/nav4sim.rviz
+```
+
+### Windows (Docker Desktop): run in containers and see the GUI
+
+Requirements: Docker Desktop with the **WSL 2** backend, 4.34+ (for
+`--network host`). Windows itself provides the display via **WSLg**
+(built into Windows 10 build 19044+ / Windows 11) — no extra software.
+
+From PowerShell:
+
+```powershell
+# 1. Simulation — the DISPLAY flags also enable the "Gazebo GUI" checkbox in the web UI
+docker run -d --name gz-sim --network host `
+  -e ROS_DOMAIN_ID=42 `
+  -e DISPLAY=:0 -e QT_X11_NO_MITSHM=1 -e LIBGL_ALWAYS_SOFTWARE=1 `
+  -v /mnt/wslg:/mnt/wslg `
+  nav4sim
+
+# 2. RViz2 sidecar — its window opens on the Windows desktop
+docker run --rm -it --name rviz --network host `
+  -e ROS_DOMAIN_ID=42 `
+  -e DISPLAY=:0 -e QT_X11_NO_MITSHM=1 -e LIBGL_ALWAYS_SOFTWARE=1 `
+  -v /mnt/wslg:/mnt/wslg `
+  nav4sim rviz2 -d /opt/gz/config/nav4sim.rviz
+```
+
+Then:
+
+- Open <http://localhost:8080> to pick a world; tick **Gazebo GUI** there to
+  also see the Gazebo client window (it uses the same `DISPLAY`).
+- Drive the robot and watch it move in RViz2 (Ctrl+C to stop):
+
+```powershell
+docker exec gz-sim bash -c "source /opt/ros/humble/setup.bash && \
+  ros2 topic pub -r 10 /cmd_vel geometry_msgs/Twist '{linear: {x: 0.5}}'"
+```
+
+What the display flags do:
+
+| Flag | Why |
+|---|---|
+| `-v /mnt/wslg:/mnt/wslg` + `DISPLAY=:0` | routes X11 to WSLg, the X server built into WSL |
+| `QT_X11_NO_MITSHM=1` | avoids Qt shared-memory errors inside containers |
+| `LIBGL_ALWAYS_SOFTWARE=1` | forces software OpenGL (reliable everywhere) |
+
+For GPU acceleration, drop `LIBGL_ALWAYS_SOFTWARE` and add
+`-v /usr/lib/wsl:/usr/lib/wsl` (needs WSLg GPU paravirtualization).
+
+**Alternative — X server on Windows (VcXsrv/X410):** install
+[VcXsrv](https://sourceforge.net/projects/vcxsrv/) and start it via
+**XLaunch** (Multiple windows → Display number `0` → Start no client → tick
+**Disable access control**), allow it through the Windows firewall, then use
+the same commands with the display flags replaced by
+`-e DISPLAY=host.docker.internal:0.0` and without the `/mnt/wslg` mount.
+
+If <http://localhost:8080> does not respond, your Docker Desktop predates
+host-networking support — upgrade to 4.34+.
 
 ## Simulation worlds
 
@@ -124,7 +197,9 @@ Simple box robot (`urdf/explore_bot.urdf.xacro`):
 
 ```
 nav4sim/
-├── Dockerfile              # ros:humble-ros-base + gazebo-ros-pkgs
+├── Dockerfile              # ros:humble-ros-base + gazebo-ros-pkgs + rviz2
+├── config/
+│   └── nav4sim.rviz        # RViz2 preset: grid, robot, TF, /points_raw, /odom
 ├── launch/
 │   └── gz.launch.py       # Gazebo launch (world/spawn args, headless/GUI, robot spawn)
 ├── urdf/
