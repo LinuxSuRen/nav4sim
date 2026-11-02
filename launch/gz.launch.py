@@ -6,10 +6,11 @@ DDS interface (navigation systems connect via these topics):
   Subscribes: /cmd_vel
 
 Launch arguments:
-  world    — world file name placed under /opt/gz/worlds (default: explore_room.world)
-  spawn_x  — robot spawn X coordinate (default: -12.0)
-  spawn_y  — robot spawn Y coordinate (default: 0.0)
-  gui      — start Gazebo GUI (default: true)
+  world      — world file name placed under /opt/gz/worlds (default: explore_room.world)
+  spawn_x    — robot spawn X coordinate (default: -12.0)
+  spawn_y    — robot spawn Y coordinate (default: 0.0)
+  gui        — start Gazebo GUI (default: true)
+  rear_lidar — add a rear LiDAR publishing /points_raw/rear (default: true)
 """
 import os
 
@@ -30,9 +31,12 @@ def generate_launch_description():
     gui = LaunchConfiguration("gui")
     spawn_x = LaunchConfiguration("spawn_x")
     spawn_y = LaunchConfiguration("spawn_y")
+    rear_lidar = LaunchConfiguration("rear_lidar")
 
     world_path = PathJoinSubstitution([GZ_DIR, "worlds", world])
-    robot_desc = ParameterValue(Command(["xacro ", urdf_path]), value_type=str)
+    robot_desc = ParameterValue(
+        Command(["xacro ", urdf_path, " rear_lidar:=", rear_lidar]), value_type=str
+    )
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
@@ -61,5 +65,7 @@ def generate_launch_description():
         DeclareLaunchArgument("spawn_x", default_value="-12.0"),
         DeclareLaunchArgument("spawn_y", default_value="0.0"),
         DeclareLaunchArgument("gui", default_value="true"),
+        DeclareLaunchArgument("rear_lidar", default_value="true",
+                              description="Add a rear LiDAR publishing /points_raw/rear"),
         gazebo, robot_state_pub, spawn,
     ])
