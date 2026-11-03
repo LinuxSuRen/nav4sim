@@ -148,8 +148,48 @@ What the display flags do:
 | `QT_X11_NO_MITSHM=1` | avoids Qt shared-memory errors inside containers |
 | `LIBGL_ALWAYS_SOFTWARE=1` | forces software OpenGL (reliable everywhere) |
 
-For GPU acceleration, drop `LIBGL_ALWAYS_SOFTWARE` and add
-`-v /usr/lib/wsl:/usr/lib/wsl` (needs WSLg GPU paravirtualization).
+#### GPU acceleration (optional)
+
+The commands above render with software OpenGL (`LIBGL_ALWAYS_SOFTWARE=1`)
+— reliable everywhere, and fast enough for this simulation. To render with
+the real GPU instead (any vendor with WSL GPU passthrough: NVIDIA / AMD /
+Intel):
+
+1. Make sure WSL GPU passthrough is available — `wsl -- ls /dev/dxg` must
+   print a device.
+2. Drop `-e LIBGL_ALWAYS_SOFTWARE=1` and add three things:
+
+```powershell
+docker run --rm -it --name rviz --network host `
+  --device /dev/dxg `
+  -v /usr/lib/wsl:/usr/lib/wsl `
+  -v /mnt/wslg:/mnt/wslg `
+  -e ROS_DOMAIN_ID=42 `
+  -e DISPLAY=:0 -e QT_X11_NO_MITSHM=1 `
+  -e LD_LIBRARY_PATH=/usr/lib/wsl/lib `
+  nav4sim rviz2 -d /opt/gz/config/nav4sim.rviz
+```
+
+`--device /dev/dxg` plus the `/usr/lib/wsl` mount and `LD_LIBRARY_PATH`
+let the container's Mesa use its D3D12 driver, which runs on the Windows
+GPU. Verify it took effect:
+
+```powershell
+docker run --rm --device /dev/dxg -v /usr/lib/wsl:/usr/lib/wsl -v /mnt/wslg:/mnt/wslg `
+  -e DISPLAY=:0 -e LD_LIBRARY_PATH=/usr/lib/wsl/lib nav4sim bash -c `
+  "apt-get update -qq && apt-get install -y -qq mesa-utils >/dev/null && glxinfo -B | grep renderer"
+```
+
+The renderer should read `D3D12 (NVIDIA ...)` — if it says `llvmpipe`,
+GPU rendering is not active. If a GUI window shows up black or crashes,
+fall back to the software-rendering command above.
+
+CUDA **compute** workloads (not needed by this simulation) are passed
+through by Docker Desktop's WSL 2 backend with `--gpus all`:
+
+```powershell
+docker run --rm --gpus all nvidia/cuda:12.8.0-base-ubuntu22.04 nvidia-smi
+```
 
 **Alternative — X server on Windows (VcXsrv/X410):** install
 [VcXsrv](https://sourceforge.net/projects/vcxsrv/) and start it via
